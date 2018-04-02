@@ -34,18 +34,18 @@ class ConcurrentTransactionControllerTest {
     private val successful = AtomicLong()
     private val failed = AtomicLong()
 
-    class TransferTask(val from: Long, val to: Long, val amount: Long) : Runnable {
+    inner class TransferTask(val from: Long, val to: Long, val amount: Long) : Runnable {
         override fun run() {
             val transaction = Transaction.Dto(UUID.randomUUID().toString(), amount, from, to, Transaction.State.NEW)
             val state = Transaction.State.valueOf(RestAssured.given().body(transaction)
                     .`when`().put("/transactions")
                     .then()
                     .extract().path<String>("data.state"))
-//            when(state) {
-//                Transaction.State.SUCCESS -> successful.incrementAndGet()
-//                Transaction.State.INSUFFICIENT_MONEY -> failed.incrementAndGet()
-//                else -> println("Unreachable case")
-//            }
+            when (state) {
+                Transaction.State.SUCCESS -> successful.incrementAndGet()
+                Transaction.State.INSUFFICIENT_MONEY -> failed.incrementAndGet()
+                else -> println("Unreachable case")
+            }
         }
     }
 
